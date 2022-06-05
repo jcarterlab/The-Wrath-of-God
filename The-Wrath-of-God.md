@@ -6,10 +6,10 @@ Jack Carter
 ## **Summary**
 
 The holy books are often said to be full of hate. This project uses
-sentiment analysis to show how they are not necessarily more negative
-than others, but rather more emotional. As with the drinking priest in
-the 1972 film The Wrath of God, this means they can be prone to
-significant anger as well as other more positive emotions.
+sentiment analysis to show how they are not necessarily full of hate,
+but simply very emotional. As with the drinking priest in the 1972 film
+The Wrath of God, this means they can be prone to significant anger as
+well as other more positive emotions.
 
  
 
@@ -22,52 +22,49 @@ God and Lord, while the Quran mainly uses God.
 
  
 
-## **2) Number of Words**
-
-*2.1 Total Words:* the holy books appear to have significantly more
+*1.2 Total Words:* the holy books appear to have significantly more
 words on average, with the Bible having the most.
 
 ![](The-Wrath-of-God_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
  
 
-*2.2 Distinct Words:* even though the Bible has more words, the Quran
+*1.3 Distinct Words:* even though the Bible has more words, the Quran
 appears to have a greater number of distinct words.
 
 ![](The-Wrath-of-God_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
  
 
-## **3) Sentiment**
+## **2) Sentiment**
 
-*3.1 Emotion:* the holy books seem to have a greater percentage of
-emotional words than others, with the Quran having more than the Bible.
+*2.1 Israelite Anger:* the Quran appears to be more angry when speaking
+about the Israelite people compared to the Bible, possibly reflecting a
+greater degree of historical intergroup conflict.
 
 ![](The-Wrath-of-God_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
  
 
-*3.2 Net Sentiment:* the holy books also seem to have a higher net
-sentiment than most others, with the Quran having a slightly higher net
-sentiment than the Bible.
+*2.2 Total Anger:* the holy books do not appear to be that angry
+compared to others, although the Quran appears to be more angry than the
+Bible.
 
 ![](The-Wrath-of-God_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
  
 
-## **4) Anger**
-
-*4.1 Total Anger:* the holy books do not appear to be that angry
-compared to others, although the Quran (which is more emotional) appears
-to be more angry than the Bible.
+*2.3 Emotion:* the holy books seem to have a greater percentage of
+emotional words compared to others, with the Quran having more than the
+Bible.
 
 ![](The-Wrath-of-God_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
  
 
-*4.2 Israelite Anger:* the Quran also appears to be more angry when
-speaking about the Israelite people compared to the Bible, possibly
-reflecting a greater degree of historical intergroup conflict.
+*2.4 Net Sentiment:* the holy books also seem to have a higher net
+sentiment than most others, with the Quran having a slightly higher net
+sentiment than the Bible.
 
 ![](The-Wrath-of-God_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
