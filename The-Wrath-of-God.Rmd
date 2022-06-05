@@ -1,0 +1,504 @@
+---
+title: "The Wrath of God"
+author: "Jack Carter"
+date: "6/4/2022"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(dplyr.summarise.inform = FALSE)
+library(dplyr, warn.conflicts = FALSE)
+library(tidyverse)
+library(gutenbergr)
+library(stringr)
+library(ggplot2)
+library(ggthemes)
+library(tibble)
+library(jsonlite)
+library(tidytext)
+
+# my personal plot theme for data visualizations. 
+my_theme <- theme_economist_white(gray_bg = FALSE) +
+  theme(plot.title = element_text(hjust = 0.5,
+                                  vjust = 10,
+                                  size = 10,
+                                  color = "#474747"),
+        plot.margin = unit(c(1.5, 1, 1.5, 1), "cm"),
+        axis.text = element_text(size = 9,
+                                 color = "gray30"),
+        axis.text.x=element_text(vjust = -2.5),
+        axis.title.x = element_text(size = 9,
+                                    color = "gray30",
+                                    vjust = -10),
+        axis.title.y = element_text(size = 9,
+                                    color = "gray30",
+                                    vjust = 10),
+        legend.direction = "vertical", 
+        legend.position = "right",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 11,
+                                   color = "gray20"),
+        legend.margin=margin(1, -15, 1, 0),
+        legend.spacing.x = unit(0.25, "cm"),
+        legend.key.size = unit(1, "cm"), 
+        legend.key.height = unit(0.75, "cm"),
+        strip.text = element_text(hjust = 0.5,
+                                  vjust = 1,
+                                  size = 10,
+                                  color = "#474747"),
+        panel.spacing = unit(2, "lines"))
+
+# opens the cleaned books data frame.
+df <- read_csv("final_df.csv") %>%
+  mutate(book = str_replace_all(book, c("bible" = "the bible", 
+                                        "quran" = "the quran")))
+
+# breaks the text down into words and filters 
+# out words of less than 2 characters. 
+words <- df %>%
+  unnest_tokens(word, text) %>%
+  filter(nchar(word)>2)
+
+# filters out stopwords.
+words <- words %>%
+  filter(!word %in% stop_words$word)
+
+# joins the words with their sentiment values. 
+sentiment <- inner_join(words, get_sentiments("nrc"))
+
+```
+
+## **Summary**
+
+The holy books are often said to be full of hate. This project uses sentiment analysis to show how they are not necessarily more negative than others, but rather more emotional. As with the drinking priest in the 1972 film The Wrath of God, this means they can be prone to significant anger as well as other more positive emotions. 
+
+&nbsp;
+
+## **1) General**
+
+*1.1 Popular Words:* the Bible appears to refer to the creator as both God and Lord, while the Quran mainly uses God. 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, dpi=600}
+
+# visualizes the top ten words for each book. 
+nums <- words %>%
+  filter(book_type == "biblical") %>%
+  group_by(book) %>%
+  count(word, sort=TRUE) %>%
+  group_by(book) %>%
+  mutate(rank = rank(n))
+
+nums %>%
+  group_by(book) %>%
+  mutate(n = (n/sum(n))*100,
+         word = str_to_title(word),
+         book = str_to_title(str_replace_all(book, "_", " "))) %>%
+  filter(rank %in% (max(rank)-9):max(rank)) %>%
+  ggplot(aes(x=word,y=n,fill=book)) +
+  ggtitle("Popular Words") +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(values = c("#00B6EB", "#FB61D7")) +
+  facet_wrap(~book,
+             scales = "free_x") +
+  scale_x_discrete(guide = guide_axis(n.dodge=3)) +
+  xlab("") +
+  ylab("Words (%)") +
+  my_theme +
+  theme(legend.position = "none")
+
+```
+
+&nbsp;
+
+## **2) Number of Words**
+
+*2.1 Total Words:* the holy books appear to have significantly more words on average, with the Bible having the most. 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, dpi=600}
+
+# visualizes how many words are in each book.
+total_words <- words %>%
+  group_by(book) %>%
+  summarize(Total = length(word)/10^3)
+
+total_words_df <- words[,c("book","book_type")] %>% 
+  left_join(total_words, by = "book") %>%
+  distinct() %>%
+  mutate(book_type = str_to_title(str_replace_all(book_type, "_", " ")),
+          book = str_to_title(str_replace_all(book, "_", " ")))
+
+total_words_df %>%
+  ggplot(aes(x=book,y=Total,fill=book)) +
+  geom_bar(stat="identity", position="dodge") +
+  ggtitle("Total Words") +
+  facet_wrap(~book_type,
+             scales="free_x") +
+  xlab("") +
+  ylab("Words (000s)") +
+  my_theme +
+  theme(legend.position = "none") +
+  scale_x_discrete(guide = guide_axis(n.dodge=3))
+
+```
+
+&nbsp;
+
+*2.2 Distinct Words:* even though the Bible has more words, the Quran appears to have a greater number of distinct words. 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, dpi=600}
+
+# visualizes how many distinct words are in each book.
+distinct_words <- words %>%
+  group_by(book) %>%
+  summarize(Distinct = length(unique(word))/10^3)
+
+distinct_words_df <- words[,c("book","book_type")] %>% 
+  left_join(distinct_words, by = "book") %>%
+  distinct() %>%
+  mutate(book_type = str_to_title(str_replace_all(book_type, "_", " ")),
+         book = str_to_title(str_replace_all(book, "_", " ")))
+
+distinct_words_df %>%
+  ggplot(aes(x=book,y=Distinct,fill=book)) +
+  geom_bar(stat="identity", position="dodge") +
+  ggtitle("Distinct Words") +
+  facet_wrap(~book_type,
+             scales="free_x") +
+  xlab("") +
+  ylab("Words (000s)") +
+  my_theme +
+  theme(legend.position = "none") +
+  scale_x_discrete(guide = guide_axis(n.dodge=3))
+
+```
+
+&nbsp;
+
+## **3) Sentiment**
+
+*3.1 Emotion:* the holy books seem to have a greater percentage of emotional words than others, with the Quran having more than the Bible. 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, dpi=600}
+
+# visualizes how emotional the books are. 
+get_hyperbole <- function(book) {
+  emotions <- length(sentiment[sentiment$book==book,]$sentiment)
+  total <- length(words[words$book==book,]$word)
+  ratio <- (emotions/total)*100
+  return(ratio)
+}
+
+books <- unique(sentiment$book)
+
+hyperbole <- tibble(book = books,
+                    hyperbole = unlist(lapply(books, get_hyperbole)))
+
+hyperbole_df <- words[,c("book","book_type")] %>% 
+  left_join(hyperbole, by = "book") %>%
+  distinct() %>%
+  mutate(book_type = str_to_title(str_replace_all(book_type, "_", " ")),
+         book = str_to_title(str_replace_all(book, "_", " ")))
+
+hyperbole_df %>%
+  ggplot(aes(x=book,y=hyperbole,fill=book)) +
+  ggtitle("Emotion") +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~book_type,
+             scales = "free_x") +
+  xlab("") +
+  ylab("Emotion (%)") +
+  my_theme +
+  theme(legend.position = "none") +
+  scale_x_discrete(guide = guide_axis(n.dodge=3))
+
+```
+
+&nbsp;
+
+*3.2 Net Sentiment:* the holy books also seem to have a higher net sentiment than most others, with the Quran having a slightly higher net sentiment than the Bible. 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, dpi=600}
+
+# visualizes net sentiment. 
+net_senitment <- sentiment %>%
+  group_by(book) %>%
+  mutate(total = length(sentiment)) %>%
+  summarize(Net=((sum(sentiment=="positive")/total)-((sum(sentiment=="negative"))/total))*100) %>%
+  distinct()
+
+net_senitment_df <- sentiment[,c("book", "book_type")] %>% 
+  left_join(net_senitment,  by = "book") %>%
+  distinct() %>%
+  mutate(book_type = str_to_title(str_replace_all(book_type, "_", " ")),
+         book = str_to_title(str_replace_all(book, "_", " ")))
+
+net_senitment_df %>%
+  ggplot(aes(x=book,y=Net,fill=book)) +
+  ggtitle("Net Sentiment") +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~book_type,
+             scales = "free_x") +
+  xlab("") +
+  ylab("Net Sentiment (%)") +
+  my_theme +
+  theme(legend.position = "none") +
+  scale_x_discrete(guide = guide_axis(n.dodge=3))
+
+```
+
+&nbsp;
+
+## **4) Anger**
+
+*4.1 Total Anger:* the holy books do not appear to be that angry compared to others, although the Quran (which is more emotional) appears to be more angry than the Bible. 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, dpi=600}
+
+# visualizes anger. 
+anger <- sentiment %>%
+  group_by(book) %>%
+  summarize(Anger = (sum(sentiment=="anger")/length(sentiment)*100)) 
+
+anger_df <- sentiment[,c("book", "book_type")] %>% 
+  left_join(anger,  by = "book") %>%
+  distinct() %>%
+  mutate(book_type = str_to_title(str_replace_all(book_type, "_", " ")),
+         book = str_to_title(str_replace_all(book, "_", " ")))
+
+anger_df %>%
+  ggplot(aes(x=book,y=Anger,fill=book)) +
+  ggtitle("Total Anger") +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~book_type,
+             scales = "free_x") +
+  xlab("") +
+  ylab("Anger (%)") +
+  my_theme +
+  theme(legend.position = "none") +
+  scale_x_discrete(guide = guide_axis(n.dodge=3))
+
+```
+
+&nbsp;
+
+*4.2 Israelite Anger:* the Quran also appears to be more angry when speaking about the Israelite people compared to the Bible, possibly reflecting a greater degree of historical intergroup conflict.
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, dpi=600}
+
+# visualizes anger for specific topics.
+get_lines <- function(term) {
+  lines <- words %>%
+    summarize(words[words$word == term,"line_no"]) %>%
+    mutate(label = term)
+  return(lines)
+}
+
+get_multiple_terms <- function(terms) {
+  lines <- list()
+  for(i in 1:length(terms))
+    lines[[i]] <- get_lines(terms[i])
+  df <- tibble(rbind_pages(lines))
+  return(df)
+}
+
+get_anger <- function(data, terms) {
+  plot <- data %>% 
+    filter(book_type == "biblical") %>%
+    left_join(terms, by = "line_no") %>%
+    filter(line_no %in% terms$line_no) %>%
+    mutate(label = str_to_title(str_replace_all(label, "_", " ")),
+           book = str_to_title(book),
+           book = str_replace_all(book, c("The Bible" = "Bible", 
+                                          "The Quran" = "Quran"))) %>%
+    group_by(book, label) %>%
+    mutate(total = length(sentiment)) %>%
+    summarize(Anger = ((sum(sentiment=="anger")/total)*100)) %>%
+    unique() %>%
+    ggplot(aes(x=book,y=Anger,fill=book)) +
+    ggtitle(str_to_title(str_replace_all(deparse(substitute(terms)),"_"," "))) +
+    geom_bar(stat = "identity", position = "dodge") +
+    facet_wrap(~label) +
+    xlab("") +
+    ylab("Anger (%)") +
+    scale_fill_manual(values = c("#00B6EB", "#FB61D7")) +
+    my_theme +
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank())
+  return(plot)
+}
+
+israelite_anger <- get_multiple_terms(c("abraham","moses","david",
+                                        "jacob","joseph","solomon",
+                                        "isaac","joshua","samuel",
+                                        "jew","israel","hebrew",
+                                        "jerusalem","jews","synagogue",
+                                        "benjamin"))
+get_anger(sentiment, israelite_anger)
+
+```
+
+&nbsp;
+
+## **Disclaimer**
+
+While the data above may suggest the Quran is more angry than the Bible, it is important to remember it is also more emotional and actually has a higher net sentiment. Both the Bible and the Torah also contain their share hateful language towards other outside groups they perceived as a threat which did not survive until this day (the Canaanites, Moabites, Amalekites etc.). Additionally, any conclusions made from sentiment analysis alone are necessarily limited, as this type of analysis does not take context into account. 
+
+&nbsp;
+
+## **Method**
+
+### **1) Download Books:**
+
+The holy books and a selection of others are downloaded from the Project Gutenberg library.
+
+---EXAMPLE CODE SNIPET---
+
+```{r, echo = TRUE, eval=FALSE, message = FALSE, warning = FALSE}
+
+# reads in the holy books from the gutenberg project library.
+bible <- gutenberg_download(30) %>%
+  mutate(gutenberg_id = "bible")
+
+...
+
+all_books <- bible %>%
+  rbind(quran) %>%
+  rbind(pride_and_prejudice) %>%
+  rbind(communist_manifesto) %>%
+  rbind(sherlock_holmes) %>%
+  rbind(alice_in_wonderland) %>%
+  rbind(the_great_gatsby)
+
+```
+
+&nbsp;
+
+### **2) Clean Books:**
+
+The holy books and a selection of others are cleaned by removing empty strings, punctuation and digits, as well as adding a column for biblical vs non-biblical and line number.  
+
+---EXAMPLE CODE SNIPET---
+
+```{r, echo = TRUE, eval=FALSE, message = FALSE, warning = FALSE}
+
+# renames the columns. 
+names(all_books) <- c("book","text")
+
+# drops all the empty strings. 
+all_books <- all_books[all_books$text !="",]
+
+# cleans all digits and punctuation. 
+all_books$text <- gsub('[[:punct:]]|[[:digit:]]','',all_books$text)
+
+# adds a biblical/not biblical and line number column. 
+final_df <- all_books %>%
+  mutate(book_type = ifelse(book %in% c("bible", "quran"), "biblical", "non_biblical"),
+         line_no = row_number())
+
+```
+
+&nbsp;
+
+### **3) Get Sentiment:**
+
+Each line is broken down into individual words (tokens), stop words (common words with little sentiment value) removed and the NRC sentiment library added via an inner join. 
+
+---EXAMPLE CODE SNIPET---
+
+```{r, echo = TRUE, eval=FALSE, message = FALSE, warning = FALSE}
+
+# breaks the text down into words and filters 
+# out words of less than 2 characters. 
+words <- df %>%
+  unnest_tokens(word, text) %>%
+  filter(nchar(word)>2)
+
+# filters out stopwords.
+words <- words %>%
+  filter(!word %in% stop_words$word)
+
+# joins the words with their sentiment values. 
+sentiment <- inner_join(words, get_sentiments("nrc"))
+
+```
+
+&nbsp;
+
+### **4) Transformation:**
+
+Various techniques are used to manipulate the data for the purpose of uncovering underlying trends. 
+
+---EXAMPLE CODE SNIPET---
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE}
+
+# extracts all words in line numbers matching a certain term. 
+get_lines <- function(term) {
+  lines <- words %>%
+    summarize(words[words$word == term,"line_no"]) %>%
+    mutate(label = term)
+  return(lines)
+}
+
+get_multiple_terms <- function(terms) {
+  lines <- list()
+  for(i in 1:length(terms))
+    lines[[i]] <- get_lines(terms[i])
+  df <- tibble(rbind_pages(lines))
+  return(df)
+}
+
+```
+
+&nbsp;
+
+### **5) Visualization:**
+
+Finally, the data is visualized with barplots in ggplot2. 
+
+---EXAMPLE CODE SNIPET---
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE}
+
+# plots the anger associated with certain terms in the holy books. 
+get_anger <- function(data, terms) {
+  plot <- data %>% 
+    filter(book_type == "biblical") %>%
+    left_join(terms, by = "line_no") %>%
+    filter(line_no %in% terms$line_no) %>%
+    mutate(label = str_to_title(str_replace_all(label, "_", " ")),
+           book = str_to_title(book)) %>%
+    group_by(book, label) %>%
+    mutate(total = length(sentiment)) %>%
+    summarize(Anger = ((sum(sentiment=="anger")/total)*100)) %>%
+    unique() %>%
+    ggplot(aes(x=book,y=Anger,fill=book)) +
+    ggtitle(str_to_title(str_replace_all(deparse(substitute(terms)),"_"," "))) +
+    geom_bar(stat = "identity", position = "dodge") +
+    facet_wrap(~label) +
+    xlab("") +
+    ylab("Sentiment (%)") +
+    my_theme +
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+  return(plot)
+}
+
+```
+
+&nbsp;
+
+## **Sources**
+
+- Firestone (2020) https://www.degruyter.com/document/doi/10.1515/9783110671773-007/html
+
+- Project Gutenberg (2022) https://www.gutenberg.org/
+
+- Mohammad (2022) https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm
+
+&nbsp;
+&nbsp;
+&nbsp;
