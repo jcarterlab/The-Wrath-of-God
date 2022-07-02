@@ -117,7 +117,7 @@ get_anger <- function(data, terms, book_Type=NULL) {
 
 ## **Summary**
 
-The holy books, particularly the Quran, are often said to be full of hate. This project uses sentiment analysis to show how they are not necessarily full of hate, but rather very emotional. As with the priest in The Wrath of God, this means they may be prone to anger, but also contain a lot of positive emotions. 
+The holy books, particularly the Quran, are often said to be full of hate. This project uses sentiment analysis to show how they are not necessarily full of hate, but rather very emotional. As with the priest in The Wrath of God, this means they may be prone to anger, but also contain a lot of positive emotions as well. 
 
 &nbsp;
 
@@ -148,7 +148,9 @@ anger_df %>%
   ylab("Anger (%)") +
   scale_fill_manual(values = c("#00B6EB", "#FB61D7")) +
   my_theme +
-  theme(legend.position = "none")
+  theme(legend.position = "none",
+        plot.margin = unit(c(2.5, 2.5, 2.5, 2.5), "cm"))
+  
 
 ```
 
