@@ -1,85 +1,68 @@
-The Wrath of God
+The Wrath of God?
 ================
 Jack Carter
 6/4/2022
 
 ## **Summary**
 
-The holy books are often said to be full of hate. This project uses
-sentiment analysis to show how they are not necessarily full of hate,
-but simply very emotional. As with the drinking priest in the 1972 film
-The Wrath of God, this means they can be prone to significant anger as
-well as other more positive emotions.
+The holy books, particularly the Quran, are often said to be full of
+hate. This project uses sentiment analysis to show how they are not
+necessarily full of hate, but rather very emotional. As with the priest
+in The Wrath of God, this means they may be prone to anger, but also
+contain a lot of positive emotions.
 
  
 
-## **1) General**
+## **1) Anger**
 
-*1.1 Popular Words:* the Bible appears to refer to the creator as both
-God and Lord, while the Quran mainly uses God.
+1.1) The Quran is more angry than the Bible.
 
 ![](The-Wrath-of-God_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
  
 
-*1.2 Total Words:* the holy books appear to have significantly more
-words on average, with the Bible having the most.
+1.2) The Quran is also more angry when speaking about the Israelite
+people.
 
 ![](The-Wrath-of-God_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
  
 
-*1.3 Distinct Words:* even though the Bible has more words, the Quran
-appears to have a greater number of distinct words.
+1.3) The Quran is also more angry when speaking about sexual sins.
 
 ![](The-Wrath-of-God_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
  
 
-## **2) Sentiment**
+## **2) Context**
 
-*2.1 Israelite Anger:* the Quran appears to be more angry when speaking
-about the Israelite people compared to the Bible, possibly reflecting a
-greater degree of historical intergroup conflict.
+2.1) The holy books are not that angry compared to other popular books.
 
 ![](The-Wrath-of-God_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
  
 
-*2.2 Total Anger:* the holy books do not appear to be that angry
-compared to others, although the Quran appears to be more angry than the
-Bible.
+2.2) Their apparent anger may stem from the fact that they are very
+emotional.
 
 ![](The-Wrath-of-God_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
  
 
-*2.3 Emotion:* the holy books seem to have a greater percentage of
-emotional words compared to others, with the Quran having more than the
-Bible.
+2.3 Their net sentiment is actually higher than most other popular
+books.
 
 ![](The-Wrath-of-God_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
-
- 
-
-*2.4 Net Sentiment:* the holy books also seem to have a higher net
-sentiment than most others, with the Quran having a slightly higher net
-sentiment than the Bible.
-
-![](The-Wrath-of-God_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
  
 
 ## **Disclaimer**
 
 While the data above may suggest the Quran is more angry than the Bible,
-it is important to remember it is also more emotional and actually has a
-higher net sentiment. Both the Bible and the Torah also contain their
-share hateful language towards other outside groups they perceived as a
-threat which did not survive until this day (the Canaanites, Moabites,
-Amalekites etc.). Additionally, any conclusions made from sentiment
-analysis alone are necessarily limited, as this type of analysis does
-not take context into account.
+it is important to remember that it is also more emotional and actually
+has a higher net sentiment. Additionally, any conclusions made from
+sentiment analysis alone are limited, as it does not take context into
+account.
 
  
 
@@ -196,9 +179,9 @@ Finally, the data is visualized with barplots in ggplot2.
 
 ``` r
 # plots the anger associated with certain terms in the holy books. 
-get_anger <- function(data, terms) {
+get_anger <- function(data, terms, book_Type=NULL) {
   plot <- data %>% 
-    filter(book_type == "biblical") %>%
+    filter(book_type == book_Type) %>%
     left_join(terms, by = "line_no") %>%
     filter(line_no %in% terms$line_no) %>%
     mutate(label = str_to_title(str_replace_all(label, "_", " ")),

@@ -264,10 +264,12 @@ get_anger(sentiment, israelite_figures)
 
 
 
-# sins. 
+# sexual sins. 
 sex <- get_multiple_terms(c("adultery","sodom","gomorrah",
                             "harlot","whore","fornication"))
 get_anger(sentiment, sex)
+
+
 
 sex <- get_multiple_terms(c("love"))
 get_anger(sentiment, sex)
