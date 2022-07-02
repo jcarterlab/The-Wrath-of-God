@@ -1,5 +1,5 @@
 # The-Wrath-of-God
-The holy books are often said to be full of hate. This project uses sentiment analysis to show how they are not necessarily full of hate, but simply very emotional. As with the drinking priest in the 1972 film The Wrath of God, this means they can be prone to significant anger as well as other more positive emotions.
+The holy books, particularly the Quran, are often said to be full of hate. This project uses sentiment analysis to show how they are not necessarily full of hate, but rather very emotional. As with the priest in The Wrath of God, this means they may be prone to anger, but also contain a lot of positive emotions as well.
 
 <br/>
 
