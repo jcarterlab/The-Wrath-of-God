@@ -174,10 +174,10 @@ get_anger(sentiment, xenophobic_anger, book_Type="biblical")
 ```{r, echo = FALSE, message = FALSE, warning = FALSE, dpi=600}
 
 # sexual sins. 
-sex <- get_multiple_terms(c("adultery","sodom","gomorrah",
+sexual_anger <- get_multiple_terms(c("adultery","sodom","gomorrah",
                             "harlot","whore","fornication"))
 
-get_anger(sentiment, sex, book_Type="biblical")
+get_anger(sentiment, sexual_anger, book_Type="biblical")
 
 ```
 
